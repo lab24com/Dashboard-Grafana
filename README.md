@@ -2,7 +2,7 @@
 
 **Desarrollado por Willian Tola — LAKA Soluciones Tecnológicas**
 
-Primera versión pública de dashboards para visualizar servidores Windows y Linux monitoreados mediante agentes Zabbix. Incluye una vista principal y una vista de detalle por servidor, con una interfaz oscura pensada para el trabajo del NOC.
+Mi Primera versión de dashboards para visualizar servidores Windows y Linux monitoreados mediante agentes Zabbix. Incluye una vista principal y una vista de detalle por servidor, con una interfaz oscura pensada para el trabajo del NOC.
 
 Este repositorio contiene dashboards JSON; los plugins se instalan por separado desde el catálogo de Grafana.
 
