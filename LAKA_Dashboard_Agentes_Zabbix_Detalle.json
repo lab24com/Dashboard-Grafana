@@ -1,0 +1,1389 @@
+{
+  "title": "LAKA | Zabbix · Detalle de servidor | Windows y Linux",
+  "description": "Detalle con datos del plugin Zabbix; enlaces en la misma pestaña. Los ítems de texto tienen consulta de 30 días.\n\nDesarrollado por LAKA Soluciones Tecnológicas. Dashboards de recursos de servidores Windows y Linux con Zabbix.",
+  "tags": [
+    "zabbix",
+    "windows",
+    "agent",
+    "7.0-7.4",
+    "laka",
+    "LAKA",
+    "LAKA Soluciones Tecnológicas"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "editable": true,
+  "refresh": "1m",
+  "time": {
+    "from": "now-2h",
+    "to": "now"
+  },
+  "annotations": {
+    "list": []
+  },
+  "__inputs": [
+    {
+      "name": "DS_ZABBIX",
+      "label": "Zabbix",
+      "description": "Fuente de datos Zabbix",
+      "type": "datasource",
+      "pluginId": "alexanderzobnin-zabbix-datasource",
+      "pluginName": "Zabbix"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "datasource",
+      "id": "alexanderzobnin-zabbix-datasource",
+      "name": "Zabbix",
+      "version": "5.0.0"
+    },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.4.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "bargauge",
+      "name": "Bar gauge",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "text",
+      "name": "Text",
+      "version": ""
+    }
+  ],
+  "id": null,
+  "uid": "zbx-win-agent-detail-plugin-v2",
+  "version": 5,
+  "panels": [
+    {
+      "id": 15,
+      "type": "marcusolsson-dynamictext-panel",
+      "title": "",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 3
+      },
+      "options": {
+        "renderMode": "data",
+        "content": "<div class=\"zr-loading\">Cargando recursos de servidores…</div>",
+        "defaultContent": "<div class=\"zr-loading\">No se recibieron datos de Zabbix.</div>",
+        "editor": {
+          "language": "html",
+          "format": "none"
+        },
+        "editors": [
+          "afterRender",
+          "styles"
+        ],
+        "wrap": false,
+        "contentPartials": [],
+        "externalStyles": [],
+        "helpers": "",
+        "status": "",
+        "afterRender": "/*\n * LAKA Soluciones Tecnológicas\n * Dashboard de recursos de servidores · Zabbix / Grafana\n * Autor: Willian Tola Laca | LAKA\n * Marca y presentación: LAKA Soluciones Tecnológicas\n */\nconst root=context.element;\nconst esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c]));\nconst name=context.grafana.replaceVariables('${host}');\nconst app=context.grafana.replaceVariables('${__appSubUrl}');\nconst base=app&&!app.includes('$')?app:'';\nconst range=context.grafana.timeRange;\nconst back=base+'/d/zbx-agents-resources-v3/windows-agentes-zabbix?from='+Number(range.from.valueOf())+'&to='+Number(range.to.valueOf());\nroot.innerHTML='<div class=\"zd-head\"><div><strong>'+esc(name)+'</strong><span class=\"laka-detail-brand\"><b>LAKA</b> Soluciones Tecnológicas</span><div class=\"zd-meta\">Consultando sistema operativo y versión del agente…</div></div><a href=\"'+esc(back)+'\">← Volver al principal</a></div>';\nconst token={};root.zdToken=token;\nconst uid=context.panelData.request?.targets?.map(t=>t.datasource?.uid).find(u=>u&&!u.includes('$'))||context.grafana.replaceVariables('${DS_ZABBIX}');\n(async()=>{\n const api=async(method,params)=>{const r=await fetch(base+'/api/datasources/uid/'+encodeURIComponent(uid)+'/resources/zabbix-api',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({method,params}),signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error();const j=await r.json();if(j.error||!Array.isArray(j.result))throw Error();return j.result;};\n const hosts=await api('host.get',{output:['hostid','host','name'],filter:{name:[name]}});\n if(!hosts.length)throw Error();\n const items=await api('item.get',{hostids:hosts.map(h=>h.hostid),output:['key_','lastvalue','lastclock'],filter:{status:0,key_:['system.sw.os[name]','system.sw.os','system.uname','agent.version']}});\n const last=k=>items.find(i=>i.key_===k&&Number(i.lastclock)>0&&i.lastvalue)?.lastvalue;\n const os=last('system.sw.os[name]')||last('system.sw.os')||last('system.uname')||'SO sin valor disponible';\n const version=last('agent.version')||'Sin valor disponible';\n if(root.zdToken!==token)return;\n root.querySelector('.zd-meta').textContent=os+' · Agente Zabbix '+version;\n})().catch(()=>{if(root.zdToken===token)root.querySelector('.zd-meta').textContent='No se pudo consultar el sistema operativo y la versión del agente.';});",
+        "styles": ".zd-head{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:10px 14px;color:#d8dee9;background:#20242b;border-left:4px solid #2dd4bf;border-radius:5px}.zd-head strong{font-size:21px}.zd-meta{font-size:13px;color:#b9c6d9;margin-top:5px;white-space:normal}.zd-head a{color:#6ae9d1;border:1px solid #454d59;border-radius:4px;padding:8px 12px;text-decoration:none;white-space:nowrap}\n/* Identidad visual: LAKA Soluciones Tecnológicas */\n.laka-detail-brand{display:inline-flex;align-items:center;gap:7px;margin-left:16px;color:#b9c6d9;font-size:11px}.laka-detail-brand b{font-size:15px;letter-spacing:2px;color:#2dd4bf}@media(max-width:700px){.laka-detail-brand{display:flex;margin-left:0;margin-top:6px}.zd-head{flex-wrap:wrap}}\n"
+      },
+      "transparent": true,
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?Zabbix agent ping$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "default",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "AGENTE",
+      "description": "1 disponible, 0 no disponible. No confundir último valor con salud del host.",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 3,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?Zabbix agent ping$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "default",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "Sin datos",
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Caído",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "Disponible",
+                  "color": "green"
+                },
+                "2": {
+                  "text": "Desconocido",
+                  "color": "orange"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 2,
+      "type": "gauge",
+      "title": "CPU USADA (%)",
+      "description": "Uso de CPU, en porcentaje. Cian <75 %, ámbar 75–89,9 %, rojo desde 90 %.",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "gridPos": {
+        "x": 3,
+        "y": 3,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?CPU utilization$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "default",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "Sin datos",
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#06B6D4",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 75
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "min": 0,
+          "max": 100,
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      }
+    },
+    {
+      "id": 3,
+      "type": "gauge",
+      "title": "RAM USADA (%)",
+      "description": "Memoria física utilizada en porcentaje; verde <75 %, ámbar 75–89,9 %, rojo desde 90 %.",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 3,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?Memory utilization$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "default",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "noValue": "Sin datos",
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 75
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "min": 0,
+          "max": 100,
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "NÚCLEOS",
+      "description": "Núcleos lógicos que reporta Windows.",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "gridPos": {
+        "x": 13,
+        "y": 3,
+        "w": 3,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?(Number of cores|Number of CPUs)$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "default",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "noValue": "Sin datos",
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "RAM TOTAL",
+      "description": "",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?Total memory$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "default",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "Sin datos",
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "TIEMPO ACTIVO",
+      "description": "",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 3,
+        "w": 4,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?Uptime$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "default",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "Sin datos",
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 7,
+      "title": "CPU · tendencia (%)",
+      "type": "timeseries",
+      "description": "Una serie por interfaz descubierta por Windows by Zabbix agent. Unidad: bits por segundo (bit/s).",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?CPU utilization$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "default",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 14,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisPlacement": "auto",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#38BDF8",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "RAM · tendencia (%)",
+      "type": "timeseries",
+      "description": "Una serie por interfaz descubierta por Windows by Zabbix agent. Unidad: bits por segundo (bit/s).",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?Memory utilization$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "default",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 14,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisPlacement": "auto",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#38BDF8",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "RED · recibido por interfaz (bit/s)",
+      "type": "timeseries",
+      "description": "Una serie por interfaz descubierta por Windows by Zabbix agent. Unidad: bits por segundo (bit/s).",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 15,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?Interface .*: Bits received$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "default",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 14,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisPlacement": "auto",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#38BDF8",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "RED · enviado por interfaz (bit/s)",
+      "type": "timeseries",
+      "description": "Una serie por interfaz descubierta por Windows by Zabbix agent. Unidad: bits por segundo (bit/s).",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 15,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?Interface .*: Bits sent$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "default",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 14,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "spanNulls": false,
+            "axisPlacement": "auto",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#38BDF8",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "marcusolsson-dynamictext-panel",
+      "title": "DISCOS · espacio usado y libre",
+      "description": "Un gráfico circular por volumen. Usado + libre = 100%; colores: normal <75%, advertencia ≥75%, crítico ≥90%.",
+      "datasource": {
+        "type": "alexanderzobnin-zabbix-datasource",
+        "uid": "${DS_ZABBIX}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 24,
+        "h": 10
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "alexanderzobnin-zabbix-datasource",
+            "uid": "${DS_ZABBIX}"
+          },
+          "refId": "A",
+          "schema": 12,
+          "queryType": "0",
+          "group": {
+            "filter": "/.*/"
+          },
+          "host": {
+            "filter": "$host"
+          },
+          "application": {
+            "filter": ""
+          },
+          "itemTag": {
+            "filter": ""
+          },
+          "item": {
+            "filter": "/^(?:Linux: |Windows: )?(FS \\[.*\\]: Space: Used, in %|.*: Space utilization)$/"
+          },
+          "proxy": {
+            "filter": ""
+          },
+          "macro": {
+            "filter": ""
+          },
+          "trigger": {
+            "filter": ""
+          },
+          "tags": {
+            "filter": ""
+          },
+          "functions": [],
+          "resultFormat": "time_series",
+          "options": {
+            "useTrends": "false",
+            "showDisabledItems": false,
+            "useZabbixValueMapping": false,
+            "disableDataAlignment": false
+          },
+          "table": {
+            "skipEmptyValues": false
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "renderMode": "data",
+        "content": "<div class=\"zr-loading\">Cargando recursos de servidores…</div>",
+        "defaultContent": "<div class=\"zr-loading\">No se recibieron datos de Zabbix.</div>",
+        "editor": {
+          "language": "html",
+          "format": "none"
+        },
+        "editors": [
+          "afterRender",
+          "styles"
+        ],
+        "wrap": false,
+        "contentPartials": [],
+        "externalStyles": [],
+        "helpers": "",
+        "status": "",
+        "afterRender": "/*\n * LAKA Soluciones Tecnológicas\n * Dashboard de recursos de servidores · Zabbix / Grafana\n * Autor: Willian Tola Laca | LAKA\n * Marca y presentación: LAKA Soluciones Tecnológicas\n */\nconst root=context.element;\nconst end=Number(context.grafana.timeRange.to.valueOf());\nconst esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c]));\nconst read=(f,i)=>f.values?.get?f.values.get(i):f.values?.[i];\nconst disks=new Map();\nfor(const frame of context.panelData?.series||[]) {\n const time=frame.fields?.find(f=>f.type==='time');\n for(const f of (frame.fields||[]).filter(f=>f.type==='number')) {\n  const scope=f.config?.custom?.scopedVars||{};\n  const key=f.labels?.item_key||scope.__zbx_item_key?.value||'';\n  const item=f.labels?.item||scope.__zbx_item?.value||f.config?.displayNameFromDS||frame.name||f.name;\n  const keyMatch=key.match(/^vfs\\.fs\\.(?:dependent\\.)?size\\[([^,]+),pused\\]$/);\n  const itemMatch=String(item).match(/FS \\[([^\\]]+)\\]/)||String(item).match(/\\(([A-Za-z]:)\\)/);\n  const volume=keyMatch?.[1]||itemMatch?.[1]||String(item).replace(/: Space.*$/,'');\n  let value=null,stamp=null;\n  for(let i=(f.values?.length||0)-1;i>=0;i--) {\n   const v=read(f,i);if(v===null||v===undefined||v===''||!Number.isFinite(Number(v)))continue;\n   value=Number(v);stamp=time?Number(read(time,i)):null;if(stamp&&stamp<1e11)stamp*=1000;break;\n  }\n  const fresh=value!==null&&value>=0&&value<=100&&stamp!==null&&stamp<=end&&end-stamp<=15*60000;\n  const previous=disks.get(volume);\n  if(!previous||Number(stamp)>Number(previous.stamp))disks.set(volume,{volume,item,value:fresh?value:null,stamp});\n }\n}\nroot.innerHTML='<div class=\"zd-disks\">'+[...disks.values()].sort((a,b)=>a.volume.localeCompare(b.volume)).map(d=>{\n const used=d.value,free=used===null?null:100-used;\n const color=used===null?'#6b7789':used>=90?'#ff6685':used>=75?'#ffc857':'#5794f2';\n const state=used===null?'Sin datos recientes':used>=90?'Crítico':used>=75?'Advertencia':'Normal';\n const background=used===null?'#353c46':'conic-gradient('+color+' 0% '+used+'%, #2dd4bf '+used+'% 100%)';\n return '<div class=\"zd-disk\" title=\"'+esc(d.item)+'\"><div class=\"zd-disk-title\">'+esc(d.volume)+'</div><div class=\"zd-donut\" role=\"img\" aria-label=\"'+esc(d.volume)+': '+(used===null?'sin datos':used.toFixed(1)+'% usado y '+free.toFixed(1)+'% libre')+'\" style=\"background:'+background+'\"><div class=\"zd-hole\"><b style=\"color:'+color+'\">'+(used===null?'—':used.toFixed(1)+'%')+'</b><span>usado</span></div></div><div class=\"zd-disk-status\" style=\"color:'+color+'\">'+state+'</div><div class=\"zd-disk-legend\"><span><i style=\"background:'+color+'\"></i>Usado '+(used===null?'—':used.toFixed(1)+'%')+'</span><span><i style=\"background:#2dd4bf\"></i>Libre '+(free===null?'—':free.toFixed(1)+'%')+'</span></div></div>';\n}).join('')+'</div>';\nif(!disks.size)root.innerHTML='<div class=\"zd-empty\">No se recibieron datos de los discos para este servidor y rango.</div>';\n",
+        "styles": ".zd-disks{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;padding:6px;color:#d8dee9}.zd-disk{background:#20242b;border:1px solid #353c46;border-radius:6px;padding:12px;text-align:center}.zd-disk-title{font-size:15px;font-weight:600;margin-bottom:10px;overflow-wrap:anywhere}.zd-donut{width:130px;height:130px;margin:0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center}.zd-hole{width:96px;height:96px;border-radius:50%;background:#20242b;display:flex;flex-direction:column;align-items:center;justify-content:center}.zd-hole b{font-size:24px}.zd-hole span{font-size:11px;color:#a7b4c7;margin-top:3px}.zd-disk-status{font-size:11px;font-weight:600;margin:8px 0}.zd-disk-legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;font-size:11px}.zd-disk-legend i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}.zd-empty{padding:20px;color:#a7b4c7}"
+      }
+    }
+  ],
+  "links": [
+    {
+      "type": "link",
+      "title": "← Volver al dashboard principal",
+      "url": "/d/zbx-agents-resources-v3/windows-agentes-zabbix?from=${__from}&to=${__to}",
+      "targetBlank": false,
+      "includeVars": false,
+      "keepTime": false,
+      "asDropdown": false
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "host",
+        "label": "Servidor Windows / Linux",
+        "type": "query",
+        "datasource": {
+          "type": "alexanderzobnin-zabbix-datasource",
+          "uid": "${DS_ZABBIX}"
+        },
+        "query": {
+          "queryType": "host",
+          "group": "/.*/",
+          "host": "/.*/",
+          "application": "",
+          "item": ""
+        },
+        "definition": "Zabbix - host",
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": "AD-SERVER",
+          "value": "AD-SERVER"
+        },
+        "options": [],
+        "description": "Selecciona un servidor o entra desde la columna SERVIDOR del dashboard principal."
+      }
+    ]
+  }
+}
