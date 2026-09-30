@@ -1,6 +1,6 @@
 # Dashboards de Grafana para agentes Zabbix | LAKA
 
-**Desarrollado por Willian Tola Laca — LAKA Soluciones Tecnológicas**
+**Desarrollado por Willian Tola — LAKA Soluciones Tecnológicas**
 
 Primera versión pública de dashboards para visualizar servidores Windows y Linux monitoreados mediante agentes Zabbix. Incluye una vista principal y una vista de detalle por servidor, con una interfaz oscura pensada para el trabajo del NOC.
 
