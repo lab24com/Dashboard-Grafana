@@ -30,7 +30,7 @@ Configuración de referencia para estos archivos:
 | Componente | Requisito |
 | --- | --- |
 | Grafana | 11 o 12, compatibles con Business Text 6.x. |
-| Zabbix | Plantillas de agentes Windows y Linux de las ramas 7.0 / 7.4; revisar nombres y claves si se usan versiones diferentes. |
+| Zabbix | Plantillas de agentes Windows y Linux de las version 7.0 / 7.4; revisar nombres y claves si se usan versiones diferentes. |
 | Plugin Zabbix | `alexanderzobnin-zabbix-app`, instalado y habilitado; usar una versión compatible con Grafana y Zabbix. Los JSON declaran la versión 5.0.0 como referencia. |
 | Plugin Business Text | `marcusolsson-dynamictext-panel`, versión 6.x. Se utiliza en ambos dashboards. |
 | Fuente de datos | Zabbix configurado en Grafana, con acceso a los hosts y a la API. |
